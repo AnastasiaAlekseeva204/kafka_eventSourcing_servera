@@ -11,9 +11,10 @@ def replay(student_id: str) -> dict:
         bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092"),
         auto_offset_reset="earliest",
         enable_auto_commit=False,
-        consumer_timeout_ms=3000, # Увеличим до 3 секунд для надежности
+        consumer_timeout_ms=1000,
         value_deserializer=lambda b: json.loads(b.decode()),
-        group_id=None # Важно: читаем как независимый консьюмер
+        # Добавляем group_id=None, чтобы каждый запрос читал историю с начала
+        group_id=None 
     )
 
     state = {
@@ -31,20 +32,22 @@ def replay(student_id: str) -> dict:
     
     for msg in consumer:
         event = msg.value
-        op = event.get("op")
-        
-        # Пытаемся найти ID везде, где он может быть
+        # Важно: в Kafka может лежать 'id' или 'student_id'
+        # Из твоего сервиса students летит структура {'student_id': ..., 'student': {...}}
         curr_id = event.get("student_id") or event.get("student", {}).get("student_id")
         
-        # Приводим к строке, чтобы избежать проблем сравнения UUID и str
+        # Принудительно приводим к строке для надежного сравнения
         if str(curr_id) == str(student_id):
-            found = True  # МЫ НАШЛИ СОБЫТИЕ!
+            found = True
+            op = event.get("op")
+            
             if op == "d":
                 state["deleted"] = True
             else:
                 student_data = event.get("student", {})
                 state.update(student_data)
                 state["deleted"] = False
+                # Мапим owner_id (из твоей модели) в user_id для фронтенда
                 if "owner_id" in student_data:
                     state["user_id"] = student_data["owner_id"]
 
