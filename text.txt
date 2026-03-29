@@ -1,0 +1,56 @@
+'''from python:alpine
+
+WORKDIR /usr/src/app
+
+COPY app/requirements.txt ./
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app/*.py ./
+
+EXPOSE 8000
+
+CMD ["gunicorn","-k","uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "--workers", "1", "main:app"]
+'''
+
+	
+	
+Response body
+Download
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsImV4cCI6MTc3NDY5OTcyN30.LDvivIMQuw9mC3wvH1jepmDgfzf5UTNGzI5qGPwV0Jw",
+  "token_type": "bearer"
+}
+
+
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsImV4cCI6MTc3NDY5OTgyOH0.Whn0eKUY8sry9ezosgexAvqy5LpOMcF-BOgDHs0K5sw",
+  "token_type": "bearer"
+}
+
+
+
+curl -X 'POST' \
+  'http://localhost:8080/api/students/' \
+  -H "Authorization: Bearer $" \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "last_name": "Тестовый",
+  "first_name": "Реплей",
+  "middle_name": "Кафкович",
+  "gender": true,
+  "age": 20
+}'
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMyIsImV4cCI6MTc3NDgxMDg3NH0.4Wxov8kn6pDyGy-GkIupLVxewG9ffEybTYLX4mEw374",
+  "token_type": "bearer"
+}
+
+
+[root@DESKTOP-SM02M4Q studentapp2]# docker exec studentapp2-kafka-1 /opt/kafka/bin/kafka-console-consumer.sh \in/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic student-events \
+  --from-beginning \
+  --max-messages 20
+{"op": "c", "student": {"student_id": "c79f9a53-f828-4d23-b784-352da6547263", "last_name": "\u0422\u0435\u0441\u0442\u043e\u0432\u044b\u0439", "first_name": "\u0420\u0435\u043f\u043b\u0435\u0439", "middle_name": "\u041a\u0430\u0444\u043a\u043e\u0432\u0438\u0447", "gender": true, "age": 20, "owner_id": 14}}
+{"op": "c", "student": {"student_id": "bde0d243-2552-41b2-aa9c-869b775d9ad4", "last_name": "\u041e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u043d\u044b\u0439", "first_name": "\u0420\u0435\u043f\u043b\u0435\u0439", "middle_name": "\u041a\u0430\u0444\u043a\u043e\u0432\u0438\u0447", "gender": true, "age": 21, "owner_id": 13}}

@@ -1,0 +1,25 @@
+:80 {
+    handle /api/auth/* {
+        reverse_proxy auth:8000
+    }
+
+    handle /api/students/* {
+        reverse_proxy students:8000
+    }
+
+    handle /api/students-es/* {
+        reverse_proxy event_processor:8000
+    }
+
+    handle /health {
+        reverse_proxy students:8000
+    }
+
+    handle {
+        reverse_proxy react:80
+    }
+
+    log {
+        output stdout
+    }
+}

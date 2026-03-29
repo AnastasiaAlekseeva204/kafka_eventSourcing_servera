@@ -1,0 +1,5 @@
+[2026-02-16 11:12:57] RECEIVED EVENT: {'action': 'CREATE', 'student_id': 6, 'details': {'name': 'Финальный'}}
+[2026-02-16 11:27:25] RECEIVED EVENT: {'action': 'CREATE', 'student_id': 7, 'details': {'name': 'Каренина'}}
+[2026-02-16 11:27:55] RECEIVED EVENT: {'action': 'CREATE', 'student_id': 8, 'details': {'name': 'Ломоносов'}}
+[2026-02-16 11:28:17] RECEIVED EVENT: {'action': 'CREATE', 'student_id': 9, 'details': {'name': 'Жан-Пьер'}}
+[2026-02-16 11:29:15] RECEIVED EVENT: {'action': 'DELETE', 'student_id': 8, 'details': {'info': 'Student removed'}}
