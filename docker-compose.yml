@@ -112,6 +112,7 @@ services:
     ports:
       - "8090:8000"
     environment:
+      - SECRET_KEY=${SECRET_KEY}
       - ENGINE_URL=postgresql://postgres:${POSTGRES_PASSWORD_ES}@es_db:5432/esdb
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     depends_on:
@@ -150,7 +151,45 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     volumes:
       - ./logs/students_history.log:/app/students_history.log
+  
+  academy-api:
+    build: ./academy-service
+    container_name: academy-api
+    command: uvicorn app.api:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8081:8000"
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - ENGINE_URL=postgresql://postgres:${POSTGRES_PASSWORD_ACADEMY}@academy_db:5432/academydb
+    depends_on:
+      - academy_db
+      - kafka
+
+  academy-worker:
+    build: ./academy-service
+    container_name: academy-worker
+    command: python app/worker.py
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - ENGINE_URL=postgresql://postgres:${POSTGRES_PASSWORD_ACADEMY}@academy_db:5432/academydb
+    depends_on:
+      - kafka
+      - academy_db
+
+  academy_db:
+    image: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD_ACADEMY}
+      - POSTGRES_DB=academydb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d academydb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
 volumes:
   postgres_data:
   postgres_data_students:
   postgres_data_es:
+  postgres_data_academy:

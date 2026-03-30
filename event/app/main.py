@@ -3,7 +3,10 @@ import os
 from fastapi import FastAPI, HTTPException
 from kafka import KafkaConsumer
 
+
 app = FastAPI()
+import os
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 def replay(student_id: str) -> dict:
     consumer = KafkaConsumer(
@@ -32,7 +35,7 @@ def replay(student_id: str) -> dict:
     
     for msg in consumer:
         event = msg.value
-        # Важно: в Kafka может лежать 'id' или 'student_id'
+        #  в Kafka может лежать 'id' или 'student_id'
         # Из твоего сервиса students летит структура {'student_id': ..., 'student': {...}}
         curr_id = event.get("student_id") or event.get("student", {}).get("student_id")
         
@@ -63,7 +66,7 @@ async def get_student(student_id: str):
         raise HTTPException(status_code=404, detail="Student not found")
     
     if state.get("deleted"):
-        # 410 Gone — отличный статус для удаленного ресурса в дипломе
+        # 410 Gone — отличный статус для удаленного ресурса
         raise HTTPException(status_code=410, detail="Student deleted")
 
     return state

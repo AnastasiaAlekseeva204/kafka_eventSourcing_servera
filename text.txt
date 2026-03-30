@@ -47,6 +47,20 @@ curl -X 'POST' \
 }
 
 
+curl -i -X 'POST' \
+  'http://localhost:8080/api/students/' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNSIsImV4cCI6MTc3NDgxNzQzMH0.dAikeqD-e94J4TLVMP1v0YT_7aNMYj2bqLfIuYTsF0M' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "last_name": "Иванов",
+    "first_name": "Иван",
+    "middle_name": "Иванович",
+    "gender": true,
+    "age": 20
+  }'
+
+
+
 [root@DESKTOP-SM02M4Q studentapp2]# docker exec studentapp2-kafka-1 /opt/kafka/bin/kafka-console-consumer.sh \in/kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 \
   --topic student-events \
@@ -54,3 +68,48 @@ curl -X 'POST' \
   --max-messages 20
 {"op": "c", "student": {"student_id": "c79f9a53-f828-4d23-b784-352da6547263", "last_name": "\u0422\u0435\u0441\u0442\u043e\u0432\u044b\u0439", "first_name": "\u0420\u0435\u043f\u043b\u0435\u0439", "middle_name": "\u041a\u0430\u0444\u043a\u043e\u0432\u0438\u0447", "gender": true, "age": 20, "owner_id": 14}}
 {"op": "c", "student": {"student_id": "bde0d243-2552-41b2-aa9c-869b775d9ad4", "last_name": "\u041e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u043d\u044b\u0439", "first_name": "\u0420\u0435\u043f\u043b\u0435\u0439", "middle_name": "\u041a\u0430\u0444\u043a\u043e\u0432\u0438\u0447", "gender": true, "age": 21, "owner_id": 13}}
+
+
+
+
+23:05
+[root@DESKTOP-SM02M4Q studentapp2]# curl -i -X 'GET' \
+  'http://localhost:8090/api/students/9824755a-ce4c-4477-94a2-d6446def9862'
+HTTP/1.1 200 OK
+date: Sun, 29 Mar 2026 20:03:04 GMT
+server: uvicorn
+content-length: 203
+content-type: application/json
+
+{"student_id":"9824755a-ce4c-4477-94a2-d6446def9862","user_id":15,"last_name":"Иванов","first_name":"Иван","middle_name":"Иванович","gender":true,"age":20,"deleted":false,"owner_id":15}[root@DESKTOP-SM02M4Q studen[root@DESKTOP-SM02M4Q studentapp2]# curl -i -X 'PATCH' \
+  'http://localhost:8080/api/students/9824755a-ce4c-4477-94a2-d6446def9862' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNSIsImV4cCI6MTc3NDgxNzQzMH0.dAikeqD-e94J4TLVMP1v0YT_7aNMYj2bqLfIuYTsF0M' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "age": 21
+  }'
+HTTP/1.1 200 OK
+date: Sun, 29 Mar 2026 20:03:41 GMT
+server: uvicorn
+content-length: 34
+content-type: application/json
+
+[root@DESKTOP-SM02M4Q studentapp2]# curl -i -X 'GET'   'http://localhost:8090/api/students/9824755a-ce4c-4477-94a2-d6446def9862'
+HTTP/1.1 200 OK
+date: Sun, 29 Mar 2026 20:03:46 GMT
+server: uvicorn
+content-length: 203
+content-type: application/json
+
+{"student_id":"9824755a-ce4c-4477-94a2-d6446def9862","user_id":15,"last_name":"Иванов","first_name":"Иван","middle_name":"Иванович","gender":true,"age":21,"deleted":false,"owner_id":15}[root@DESKTOP-SM02M4Q studen
+[root@DESKTOP-SM02M4Q studentapp2]# 
+
+
+
+#
+class Enrollment(Base):
+    __tablename__ = "enrollments"
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(String, index=True)
+    course_name = Column(String)
+    is_active = Column(Boolean, default=True)
