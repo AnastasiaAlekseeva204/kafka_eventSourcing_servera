@@ -5,6 +5,8 @@ from .database import SessionLocal
 from .models import ProcessedEvent
 from .enrollment_saga import confirm_enrollment # Импортируем нашу логику
 
+#Обработчик (Choreography Follower)
+
 c = Consumer({
     "bootstrap.servers": os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092"),
     "group.id": "enrollment-processor-group",

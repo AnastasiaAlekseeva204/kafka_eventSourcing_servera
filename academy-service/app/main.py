@@ -11,14 +11,45 @@ from database import SessionLocal
 from database_models import Student
 from producer import KafkaService
 from student_events import StudentCreated, StudentUpdated, StudentDeleted
+from app.enrollment_saga import request_enrollment
+from app.validation_models import EnrollmentCreate, EnrollmentOut
 
 # academy запрос делает
+#Инициатор (Choreography Starter)
 #enrollment главный плюс обрабатывает
 app = FastAPI()
 
 @app.get("/health")
 def health():
     return {"status": "academy service alive"}
+
+
+# НОВЫЙ ЭНДПОИНТ
+@app.post("/api/enrollments/", response_model=EnrollmentOut)
+async def create_enrollment(body: EnrollmentCreate, user_id: int = Depends(get_current_user)):
+    """
+    Academy делает запрос на зачисление.
+    Это Инициатор (Choreography Starter).
+    """
+    try:
+        # Вызываем логику Саги, которая отправит событие "enroll_requested"
+        enrollment_id = request_enrollment(
+            student_id=body.student_id, 
+            course_id=body.course_id,
+            user_id=user_id
+        )
+        
+        # Возвращаем PENDING, так как процесс асинхронный
+        return {
+            "enrollment_id": enrollment_id, 
+            "status": "PENDING"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR, 
+            detail=f"Saga failed to start: {str(e)}"
+        )
+
 
 @router.get("/api/students/{student_id}")
 def get_student(student_id: int, user_id: int = Depends(get_current_user), session: Session = Depends(get_session)):

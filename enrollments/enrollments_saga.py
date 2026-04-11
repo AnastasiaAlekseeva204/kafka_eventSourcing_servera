@@ -1,20 +1,23 @@
 from sqlalchemy.orm import Session
 from .models import EnrollmentRecord, ProcessedEvent
 
-def confirm_enrollment(session: Session, event: dict):
-    # Проверяем, нет ли уже такого зачисления (бизнес-логика)
-    existing = session.query(EnrollmentRecord).filter(
-        EnrollmentRecord.student_id == event["student_id"],
-        EnrollmentRecord.course_id == event["course_id"]
-    ).first()
+import uuid
+from producer import KafkaService
 
-    if not existing:
-        # Создаем запись о подтвержденном зачислении
-        new_enrollment = EnrollmentRecord(
-            student_id=event["student_id"],
-            enrollment_id=event["enrollment_id"],
-            course_id=event["course_id"],
-            status="CONFIRMED"
-        )
-        session.add(new_enrollment)
-        print(f"✅ Enrollment {event['enrollment_id']} confirmed in DB")
+def request_enrollment(student_id: str, course_id: str, user_id: int):
+    enrollment_id = str(uuid.uuid4())
+    event_id = str(uuid.uuid4()) # Для защиты от дублей (идемпотентность)
+    
+    event_for_kafka = {
+        "event_id": event_id,
+        "op": "enroll_requested", # Наша сложная операция
+        "enrollment_id": enrollment_id,
+        "student_id": student_id,
+        "course_id": course_id,
+        "user_id": user_id
+    }
+    
+    # Отправляем в тот же топик или в отдельный "enrollment-events"
+    KafkaService.send_message("student-events", event_for_kafka)
+    
+    return enrollment_id
