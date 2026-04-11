@@ -153,28 +153,23 @@ services:
       - ./logs/students_history.log:/app/students_history.log
   
   academy-api:
-    build: ./academy-service
+    build:
+      context: .  # Теперь Docker видит весь корень репозитория
+      dockerfile: ./academy-service/Dockerfile
     container_name: academy-api
-    command: uvicorn app.api:app --host 0.0.0.0 --port 8000
+    # Указываем переменную, чтобы Python искал модули и в /app, и в /app/structure
+    environment:
+      - PYTHONPATH=/app
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - ENGINE_URL=postgresql://postgres:${POSTGRES_PASSWORD_ACADEMY}@academy_db:5432/academydb
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8081:8000"
-    environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - ENGINE_URL=postgresql://postgres:${POSTGRES_PASSWORD_ACADEMY}@academy_db:5432/academydb
     depends_on:
-      - academy_db
-      - kafka
-
-  academy-worker:
-    build: ./academy-service
-    container_name: academy-worker
-    command: python app/worker.py
-    environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - ENGINE_URL=postgresql://postgres:${POSTGRES_PASSWORD_ACADEMY}@academy_db:5432/academydb
-    depends_on:
-      - kafka
-      - academy_db
+      academy_db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
 
   academy_db:
     image: postgres

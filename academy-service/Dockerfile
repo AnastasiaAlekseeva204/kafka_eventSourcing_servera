@@ -1,23 +1,22 @@
-# Используем легкий образ Python
 FROM python:3.10-slim
 
-# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Устанавливаем системные зависимости для psycopg2 и curl (для healthcheck)
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     gcc \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Копируем файл зависимостей
-COPY requirements.txt .
-
-# Устанавливаем библиотеки
+# Копируем зависимости именно из папки сервиса
+COPY academy-service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем весь исходный код из папки academy в контейнер
-COPY . .
+# Копируем общие модули
+COPY structure/ ./structure/
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Копируем сам сервис в подпапку app
+COPY academy-service/app/ ./app/
+
+# Если в корне academy-service есть еще важные файлы (например, alembic или доп. скрипты), 
+# можно скопировать их отдельно, но главное, чтобы структура внутри /app совпадала с импортами

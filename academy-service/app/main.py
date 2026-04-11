@@ -1,16 +1,9 @@
-from fastapi import FastAPI
-import uuid
-from dataclasses import asdict
-from fastapi import HTTPException, Depends
-from typing import List, Optional, Dict, Union, Any
-from http import HTTPStatus
-from math import ceil
-from sqlalchemy.orm import Session
+from structure.database import SessionLocal
+from structure.database_models import Student  # Проверь название файла, может быть просто models?
+from structure.producer import KafkaService
+from structure.student_events import StudentCreated, StudentUpdated, StudentDeleted
 
-from database import SessionLocal
-from database_models import Student
-from producer import KafkaService
-from student_events import StudentCreated, StudentUpdated, StudentDeleted
+# Импорты из текущей папки app (оставляем так, если main.py лежит в app/)
 from app.enrollment_saga import request_enrollment
 from app.validation_models import EnrollmentCreate, EnrollmentOut
 
