@@ -47,7 +47,6 @@ try:
 
         except Exception as e:
             print(f"❌ Error in processing message: {e}")
-            # Здесь можно добавить логику retry или отправку в error-topic
 
 finally:
     c.close()

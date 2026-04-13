@@ -1,9 +1,9 @@
 from structure.database import SessionLocal
-from structure.database_models import Student  # Проверь название файла, может быть просто models?
+from structure.database_models import Student # <--- Проверь, что в database_models.py есть класс Student
 from structure.producer import KafkaService
 from structure.student_events import StudentCreated, StudentUpdated, StudentDeleted
 
-# Импорты из текущей папки app (оставляем так, если main.py лежит в app/)
+# Твои внутренние импорты сервиса
 from app.enrollment_saga import request_enrollment
 from app.validation_models import EnrollmentCreate, EnrollmentOut
 
@@ -11,6 +11,7 @@ from app.validation_models import EnrollmentCreate, EnrollmentOut
 #Инициатор (Choreography Starter)
 #enrollment главный плюс обрабатывает
 app = FastAPI()
+router = app
 
 @app.get("/health")
 def health():

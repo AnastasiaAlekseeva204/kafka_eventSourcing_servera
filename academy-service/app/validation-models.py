@@ -32,7 +32,7 @@ class StudentOut(StudentBase):
     model_config = ConfigDict(from_attributes=True)
     id: IdType
 
-# Добавь это в конец своего файла validation-models.py
+# Добавила это в конец файла
 class EnrollmentCreate(BaseModel):
     student_id: str
     course_id: str
