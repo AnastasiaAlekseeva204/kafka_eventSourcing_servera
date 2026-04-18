@@ -15,7 +15,7 @@ c = Consumer({
 })
 c.subscribe(["student_events"])
 
-print("🚀 Enrollment Main Processor is running...")
+print("🚀 Процесс зачисления отправлен...")
 
 try:
     while True:

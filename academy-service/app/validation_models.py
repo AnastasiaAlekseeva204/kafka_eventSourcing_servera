@@ -34,9 +34,12 @@ class StudentOut(StudentBase):
 
 # Добавила это в конец файла
 class EnrollmentCreate(BaseModel):
-    student_id: str
+    student_id: int
     course_id: str
 
 class EnrollmentOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True) # Добавила, чтобы работало с БД
     enrollment_id: str
-    status: str  # Будет "PENDING"    
+    student_id: int
+    course_id: str
+    status: Literal["PENDING", "APPROVED", "REJECTED", "CANCELLED"] = "PENDING"   

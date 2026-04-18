@@ -1,10 +1,10 @@
 from structure.database import SessionLocal
-from structure.database_models import Student # <--- Проверь, что в database_models.py есть класс Student
-from structure.producer import KafkaService
+from structure.student_kafka import KafkaService
+from structure.database_models import Student
 from structure.student_events import StudentCreated, StudentUpdated, StudentDeleted
 
 # Твои внутренние импорты сервиса
-from app.enrollment_saga import request_enrollment
+from enrollment.enrollment_saga import request_enrollment
 from app.validation_models import EnrollmentCreate, EnrollmentOut
 
 # academy запрос делает

@@ -1,0 +1,22 @@
+{
+  "name": "outbox-postgres",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "students_db", 
+    "database.port": "5432",
+    "database.user": "user",
+    "database.password": "password",
+    "database.dbname": "students_db",
+    "database.server.name": "dbserver1",
+    "table.include.list": "public.outbox_student",
+    "plugin.name": "pgoutput",
+    "publication.autocreate.mode": "filtred",
+
+
+    "transforms": "outbox",
+    "transfors.outbox.types": "io.debezium.transforms.outbox.EventRouter",
+    "transfors.outbox.router.by.field": "aggregate_type",
+    "transfors.outbox.route.topic.replacement": "${routedByValues}",
+    "trans.outbox.route.table.field.event.key": "aggregate_id"
+  }
+}

@@ -171,6 +171,22 @@ services:
       kafka:
         condition: service_started
 
+  enrollment-processor:
+    build:
+      context: .
+      dockerfile: ./academy-service/Dockerfile
+    container_name: enrollment-processor
+    environment:
+      - PYTHONPATH=/app
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - ENGINE_URL=postgresql://postgres:${POSTGRES_PASSWORD_ACADEMY}@academy_db:5432/academydb
+    # ВАЖНО: запускаем не uvicorn, а твой скрипт-потребитель
+    command: python enrollment/enrollments_consumer.py 
+    depends_on:
+      - kafka
+      - academy_db
+    restart: unless-stopped      
+
   academy_db:
     image: postgres
     restart: unless-stopped
@@ -182,7 +198,27 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-      start_period: 5s
+      start_period: 5s    
+
+  connect:
+    image: quay.io/debezium/connect
+    ports:
+      - "8083:8083"
+    environment:
+      - BOOTSTRAP_SERVERS=kafka:9092
+      - GROUP_ID=1
+      - CONFIG_STORAGE_TOPIC=my_connect_configs
+      - OFFSET_STORAGE_TOPIC=my_connect_offsets
+      - STATUS_STORAGE_TOPIC=my_connect_statuses
+    depends_on:
+      - kafka
+      - students_db
+
+  bootstrap:
+    build: bootstrap
+    depends_on:
+      - connect
+       
 volumes:
   postgres_data:
   postgres_data_students:
