@@ -32,7 +32,7 @@ class StudentOut(StudentBase):
     model_config = ConfigDict(from_attributes=True)
     id: IdType
 
-# Добавила это в конец файла
+
 class EnrollmentCreate(BaseModel):
     student_id: int
     course_id: str

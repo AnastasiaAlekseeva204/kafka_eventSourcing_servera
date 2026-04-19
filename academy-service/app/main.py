@@ -54,48 +54,105 @@ def get_student(student_id: int, user_id: int = Depends(get_current_user), sessi
 
 
 @router.post("/api/students/", status_code=201)
-async def create_student(body: StudentCreate, user_id: int = Depends(get_current_user)):
+async def create_student(
+    body: StudentCreate, 
+    user_id: int = Depends(get_current_user), 
+    session: Session = Depends(get_session) # Добавляем сессию БД
+):
     student_id = str(uuid.uuid4())
     
-    event_for_kafka = {
-        "op": "c",  # 'c' = create
-        "student": {
-            "student_id": student_id,
-            "last_name": body.last_name,
-            "first_name": body.first_name,
-            "middle_name": body.middle_name,
-            "gender": body.gender,
-            "age": body.age,
-            "owner_id": user_id
+    # 1. Сначала создаем самого студента в его таблице
+    new_student = Student(
+        id=student_id, # если у тебя UUID как строка
+        last_name=body.last_name,
+        first_name=body.first_name,
+        middle_name=body.middle_name,
+        gender=body.gender,
+        age=body.age,
+        owner_id=user_id
+    )
+    session.add(new_student)
+
+    # 2. Вместо KafkaService.send_message создаем запись в Outbox
+    # Debezium увидит эту запись и САМ отправит её в Kafka
+    outbox_event = Outbox(
+        aggregate_type="student",
+        aggregate_id=student_id,
+        type="StudentCreated",
+        payload={
+            "op": "c",
+            "student": {
+                "student_id": student_id,
+                "last_name": body.last_name,
+                "first_name": body.first_name,
+                "middle_name": body.middle_name,
+                "gender": body.gender,
+                "age": body.age,
+                "owner_id": user_id
+            }
         }
-    }
+    )
+    session.add(outbox_event)
     
-    # 3. Отправляем именно event_for_kafka
-    KafkaService.send_message("student-events", event_for_kafka)
+    # 3. Фиксируем транзакцию. 
+    # Теперь либо сохранятся оба (студент и событие), либо ничего.
+    session.commit()
     
-    return {"id": student_id, "status": "created_via_events"}
+    return {"id": student_id, "status": "saved_to_outbox"}
 
 @router.patch("/api/students/{student_id}")
-async def update_student(student_id: str, body: StudentUpdate, user_id: int = Depends(get_current_user)):
-    event_for_kafka = {
-        "op": "u",  # 'u' = update
-        "student": {
-            "student_id": student_id,
-            "owner_id": user_id,
-            **body.model_dump(exclude_none=True)
+async def update_student(
+    student_id: str, 
+    body: StudentUpdate, 
+    user_id: int = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    # В реальном проекте тут должен быть поиск студента и session.merge/update
+    # Но для Outbox главное — записать событие "u" (update) в таблицу
+    outbox_event = Outbox(
+        aggregate_type="student",
+        aggregate_id=student_id,
+        type="StudentUpdated",
+        payload={
+            "op": "u",
+            "student": {
+                "student_id": student_id,
+                "owner_id": user_id,
+                **body.model_dump(exclude_none=True)
+            }
         }
-    }
-    
-    KafkaService.send_message("student-events", event_for_kafka)
-    return {"status": "update_event_produced"}
+    )
+    session.add(outbox_event)
+    session.commit()
+    return {"status": "update_saved_to_outbox"}
 
 @router.delete("/api/students/{student_id}")
-async def delete_student(student_id: str, user_id: int = Depends(get_current_user)):
-    event_for_kafka = {
-        "op": "d",  # 'd' = delete
-        "student_id": student_id,
-        "user_id": user_id
-    }
-
-    KafkaService.send_message("student-events", event_for_kafka)
-    return {"message": "Delete event produced"}    
+async def delete_student(
+    student_id: str, 
+    user_id: int = Depends(get_current_user),
+    session: Session = Depends(get_session) # Не забываем сессию
+):
+    # 1. Сначала удаляем (или помечаем удаленным) студента из основной таблицы
+    # student = session.query(Student).filter(Student.id == student_id, Student.owner_id == user_id).first()
+    # if student:
+    #     session.delete(student)
+    
+    # 2. Записываем событие удаления в Outbox
+    # Debezium увидит операцию "d" и отправит её в Kafka
+    outbox_event = Outbox(
+        aggregate_type="student",
+        aggregate_id=student_id,
+        type="StudentDeleted",
+        payload={
+            "op": "d",  # 'd' = delete (в стиле Debezium)
+            "student_id": student_id,
+            "user_id": user_id
+        }
+    )
+    
+    session.add(outbox_event)
+    
+    # 3. Фиксируем транзакцию
+    session.commit()
+    
+    return {"message": "Delete event saved to outbox", "student_id": student_id}   

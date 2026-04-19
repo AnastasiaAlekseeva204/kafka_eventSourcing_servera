@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "EnrollmentEvent",
+  "namespace": "ru.university.schema",
+  "fields": [
+    {"name": "event_id", "type": "string"},
+    {"name": "op", "type": "string"},
+    {"name": "enrollment_id", "type": "string"},
+    {"name": "student_id", "type": "string"},
+    {"name": "course_id", "type": "string"},
+    {"name": "user_id", "type": "int"}
+  ]
+}
