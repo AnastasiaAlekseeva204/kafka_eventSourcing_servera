@@ -2,6 +2,8 @@ fastapi
 uvicorn
 sqlalchemy
 psycopg2-binary
-kafka-python
-confluent-kafka[avro]
-fastjsonschema
+confluent-kafka[avro]  # Основная библиотека для Kafka + Avro
+requests               # Нужен для общения со Schema Registry под капотом
+pydantic               # Для твоих схем валидации
+pydantic-settings      # Для удобного чтения .env
+python-dotenv

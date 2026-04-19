@@ -2,7 +2,10 @@ from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import ForeignKey
-
+import uuid
+from datetime import datetime
+from sqlalchemy import JSON, DateTime, String
+from sqlalchemy.dialects.postgresql import UUID # Для корректной работы с Postgres
 
 class Base(DeclarativeBase):
     pass
@@ -21,7 +24,7 @@ class Student(Base):
 class OutboxStudent(Base):
     __tablename__ = "outbox_student"
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     aggregate_type: Mapped[str] = mapped_column(String(255))
     aggregate_id: Mapped[str] = mapped_column(String(255))
     type: Mapped[str] = mapped_column(String(255))

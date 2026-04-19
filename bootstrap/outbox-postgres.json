@@ -2,11 +2,11 @@
   "name": "outbox-postgres",
   "config": {
     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
-    "database.hostname": "students_db", 
+    "database.hostname": "academy_db", 
     "database.port": "5432",
     "database.user": "user",
     "database.password": "password",
-    "database.dbname": "students_db",
+    "database.dbname": "academy_db",
     "database.server.name": "dbserver1",
     "table.include.list": "public.outbox_student",
     "plugin.name": "pgoutput",

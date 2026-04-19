@@ -161,6 +161,7 @@ services:
     environment:
       - PYTHONPATH=/app
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SCHEMA_REGISTRY_URL=http://schema-registry:8081
       - ENGINE_URL=postgresql://postgres:${POSTGRES_PASSWORD_ACADEMY}@academy_db:5432/academydb
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
@@ -179,6 +180,7 @@ services:
     environment:
       - PYTHONPATH=/app
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SCHEMA_REGISTRY_URL=http://schema-registry:8081
       - ENGINE_URL=postgresql://postgres:${POSTGRES_PASSWORD_ACADEMY}@academy_db:5432/academydb
     # ВАЖНО: запускаем не uvicorn, а твой скрипт-потребитель
     command: python enrollment/enrollments_consumer.py 
@@ -210,17 +212,21 @@ services:
       - CONFIG_STORAGE_TOPIC=my_connect_configs
       - OFFSET_STORAGE_TOPIC=my_connect_offsets
       - STATUS_STORAGE_TOPIC=my_connect_statuses
+      - KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
     depends_on:
       - kafka
-      - students_db
+      - academy_db
 
   bootstrap:
     build: bootstrap
     depends_on:
       - connect
-      
+
   schema-registry:
     image: confluentinc/cp-schema-registry:7.5.0
+    ports:
+    - 8081:8081
     depends_on:
       - kafka
     environment:
