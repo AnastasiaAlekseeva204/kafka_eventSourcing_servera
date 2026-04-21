@@ -30,5 +30,3 @@ class OutboxStudent(Base):
     type: Mapped[str] = mapped_column(String(255))
     payload: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
-    #53^14

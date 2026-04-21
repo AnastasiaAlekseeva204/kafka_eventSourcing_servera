@@ -7,7 +7,7 @@ from .models import ProcessedEvent
 from .enrollment_saga import confirm_enrollment
 
 # 1. Настройка Schema Registry Client
-# URL берем из переменных окружения (обычно http://schema-registry:8081)
+# URL берем из переменных окружения
 sr_url = os.getenv("SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
 sr_client = SchemaRegistryClient({'url': sr_url})
 
@@ -32,7 +32,7 @@ try:
         if msg.error(): continue
 
         try:
-            # ТЕПЕРЬ: Десериализуем сообщение с помощью Avro
+            #  Десериализуем сообщение с помощью Avro
             # Если формат сообщения не совпадет со схемой в реестре, тут вылетит ошибка
             event = avro_deserializer(msg.value(), None) 
             

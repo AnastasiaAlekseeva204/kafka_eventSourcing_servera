@@ -1,5 +1,5 @@
 from structure.database import SessionLocal
-from structure.student_kafka import KafkaService
+from structure.student_kafka import StudentEventProducer as KafkaService
 from structure.database_models import Student
 from structure.student_events import StudentCreated, StudentUpdated, StudentDeleted
 
@@ -73,7 +73,7 @@ async def create_student(
     )
     session.add(new_student)
 
-    # 2. Вместо KafkaService.send_message создаем запись в Outbox
+    # 2.  создаю запись в Outbox
     # Debezium увидит эту запись и САМ отправит её в Kafka
     outbox_event = Outbox(
         aggregate_type="student",
@@ -107,7 +107,6 @@ async def update_student(
     user_id: int = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
-    # В реальном проекте тут должен быть поиск студента и session.merge/update
     # Но для Outbox главное — записать событие "u" (update) в таблицу
     outbox_event = Outbox(
         aggregate_type="student",
