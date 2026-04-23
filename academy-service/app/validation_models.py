@@ -1,5 +1,6 @@
 from typing import Annotated, List, Optional
 from pydantic import BaseModel, Field, ConfigDict
+from typing import Literal
 
 
 LastNameType = Annotated[str, Field(min_length=1)]

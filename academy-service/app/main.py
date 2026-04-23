@@ -1,22 +1,38 @@
 from structure.database import SessionLocal
+from sqlalchemy.orm import Session
 from structure.student_kafka import StudentEventProducer as KafkaService
 from structure.database_models import Student
 from structure.student_events import StudentCreated, StudentUpdated, StudentDeleted
-
-# Твои внутренние импорты сервиса
-from enrollment.enrollment_saga import request_enrollment
+from fastapi import FastAPI, HTTPException, Depends
+from enrollments.enrollments_saga import request_enrollment
 from app.validation_models import EnrollmentCreate, EnrollmentOut
-
+from students.app import CryptService
 # academy запрос делает
 #Инициатор (Choreography Starter)
 #enrollment главный плюс обрабатывает
 app = FastAPI()
 router = app
 
+
+def get_session():
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
+
 @app.get("/health")
 def health():
     return {"status": "academy service alive"}
 
+def get_current_user(token: str = Depends()) -> int:
+    try:
+        user_id = CryptService.decode_token(token)
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User not found")
+        return user_id
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
 # НОВЫЙ ЭНДПОИНТ
 @app.post("/api/enrollments/", response_model=EnrollmentOut)

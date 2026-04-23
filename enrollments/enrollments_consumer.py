@@ -21,7 +21,7 @@ c = Consumer({
     "auto_offset_reset": "earliest",
     "enable.auto.commit": "false"
 })
-c.subscribe(["student_events"])
+c.subscribe(["student-events"])
 
 print("🚀 Обработчик зачислений (Avro + Schema Registry) запущен...")
 

@@ -6,7 +6,7 @@ import os
 sr_client = SchemaRegistryClient({'url': os.getenv("SCHEMA_REGISTRY_URL", "http://schema-registry:8081")})
 
 # Читаем схему из файла
-with open("enrollment.avsc") as f:
+with open("enrollments/enrollment.avsc") as f:
     schema_str = f.read()
 
 avro_serializer = AvroSerializer(sr_client, schema_str)

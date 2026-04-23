@@ -3,11 +3,10 @@ import os
 from fastapi import FastAPI, HTTPException
 from kafka import KafkaConsumer
 
-
 app = FastAPI()
-import os
-SECRET_KEY = os.getenv("SECRET_KEY")
 
+SECRET_KEY = os.getenv("SECRET_KEY")
+#Ты можешь просто «прочитать историю» с самого начала.
 def replay(student_id: str) -> dict:
     consumer = KafkaConsumer(
         "student-events",
@@ -66,7 +65,7 @@ async def get_student(student_id: str):
         raise HTTPException(status_code=404, detail="Student not found")
     
     if state.get("deleted"):
-        # 410 Gone — отличный статус для удаленного ресурса
+        # 410 Gone —  статус для удаленного ресурса
         raise HTTPException(status_code=410, detail="Student deleted")
 
     return state

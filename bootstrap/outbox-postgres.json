@@ -14,9 +14,9 @@
 
 
     "transforms": "outbox",
-    "transfors.outbox.types": "io.debezium.transforms.outbox.EventRouter",
-    "transfors.outbox.router.by.field": "aggregate_type",
-    "transfors.outbox.route.topic.replacement": "${routedByValues}",
+    "transforms.outbox.types": "io.debezium.transforms.outbox.EventRouter",
+    "transforms.outbox.router.by.field": "aggregate_type",
+    "transforms.outbox.route.topic.replacement": "${routedByValues}",
     "trans.outbox.route.table.field.event.key": "aggregate_id"
   }
 }
